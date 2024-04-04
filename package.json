@@ -1,0 +1,11 @@
+{
+  "name": "file-sync-engine",
+  "version": "1.0.0",
+  "author": "Heramb Sawant",
+  "scripts": {},
+  "devDependencies": {
+    "@types/node": "^20.12.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.3"
+  }
+}
