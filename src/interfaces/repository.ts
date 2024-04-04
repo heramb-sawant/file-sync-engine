@@ -1,4 +1,21 @@
-// Methods for interacting with local state necessary for supporting the SyncEngine
+enum SyncType {
+  "CREATE",
+  "DELETE",
+  "UPDATE",
+  "MOVE",
+}
 interface Repository {
-  // This is open-ended to allow for defining as you see fit for the solution below
+  addToFileSyncQueue: (action: {
+    type: SyncType;
+    path: string;
+    // TODO: Create multiple input types instead of just this optional
+    targetPath?: string;
+  }) => void;
+  removeFromFileSyncQueue: (id: string) => void;
+  getFileSyncQueue: () => {
+    id: string;
+    type: SyncType;
+    path: string;
+    targetPath?: string;
+  }[];
 }
