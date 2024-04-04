@@ -19,6 +19,13 @@ class SyncEngine {
   private handleFileCreated = async (file: { path: string }) => {
     const { path } = file;
 
+    if (!this.airSDK.hasNetworkConnection()) {
+      return this.repository.addToFileSyncQueue({
+        type: SyncType.CREATE,
+        path: file.path,
+      });
+    }
+
     try {
       const fileBuffer = await this.fileSystem.readFile(path);
 
@@ -31,6 +38,13 @@ class SyncEngine {
   private handleFileDeleted = async (file: { path: string }) => {
     const { path } = file;
 
+    if (!this.airSDK.hasNetworkConnection()) {
+      return this.repository.addToFileSyncQueue({
+        type: SyncType.DELETE,
+        path: file.path,
+      });
+    }
+
     try {
       return this.airSDK.deleteAsset(path);
     } catch (error) {
@@ -40,6 +54,13 @@ class SyncEngine {
 
   private handleFileUpdated = async (file: { path: string }) => {
     const { path } = file;
+
+    if (!this.airSDK.hasNetworkConnection()) {
+      return this.repository.addToFileSyncQueue({
+        type: SyncType.UPDATE,
+        path: file.path,
+      });
+    }
 
     try {
       const fileBuffer = await this.fileSystem.readFile(path);
@@ -58,6 +79,14 @@ class SyncEngine {
     targetPath: string;
   }) => {
     const { targetPath, sourcePath } = file;
+
+    if (!this.airSDK.hasNetworkConnection()) {
+      return this.repository.addToFileSyncQueue({
+        type: SyncType.MOVE,
+        path: file.sourcePath,
+        targetPath,
+      });
+    }
 
     try {
       return this.airSDK.updateAssetByPath({
