@@ -29,6 +29,7 @@ interface AirSDK {
       url: string;
     }) => void
   ) => void;
+  // TODO: Missing onAssetMove which is critical for sync.
   getAsset: (id: string) => Promise<{
     id: string;
     path: string;
