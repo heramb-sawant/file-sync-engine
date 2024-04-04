@@ -14,6 +14,7 @@ class SyncEngine {
     this.airSDK.onAssetCreated(this.handleAssetCreated);
     this.airSDK.onAssetDeleted(this.handleAssetDeleted);
     this.airSDK.onAssetUpdated(this.handleAssetUpdated);
+    this.airSDK.onNetworkConnected(this.processFileSyncQueue);
   }
 
   private handleFileCreated = async (file: { path: string }) => {
@@ -125,7 +126,50 @@ class SyncEngine {
 
       return this.fileSystem.writeFile(asset.path, assetData);
     } catch (error) {
-      throw new Error();
+      throw new Error("handleAssetUpdated: An error occurred on asset update.");
     }
   };
+
+  private async processFileSyncQueue() {
+    const queue = this.repository.getFileSyncQueue();
+
+    while (queue.length > 0 && this.airSDK.hasNetworkConnection()) {
+      for (const action of queue) {
+        switch (action.type) {
+          case SyncType.CREATE:
+            await this.handleFileCreated({
+              path: action.path,
+            });
+            break;
+          case SyncType.DELETE:
+            await this.handleFileDeleted({
+              path: action.path,
+            });
+            break;
+          case SyncType.UPDATE:
+            await this.handleFileUpdated({
+              path: action.path,
+            });
+            break;
+          case SyncType.MOVE:
+            if (!action.targetPath) {
+              throw new Error(
+                `File sync queue action id:${action.id} missing targetPath.`
+              );
+            }
+            await this.handFileMoved({
+              sourcePath: action.path,
+              targetPath: action.targetPath,
+            });
+            break;
+          default:
+            throw new Error(
+              `An error occurred while trying to process ${action.id} from file sync queue.`
+            );
+        }
+
+        await this.repository.removeFromFileSyncQueue(action.id);
+      }
+    }
+  }
 }
